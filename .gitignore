@@ -1,0 +1,16 @@
+# Project plan (private working doc — intentionally not committed)
+docs/implementation-plan.md
+
+# Android / Gradle
+*.iml
+.gradle/
+build/
+local.properties
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.hprof
