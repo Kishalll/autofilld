@@ -97,6 +97,9 @@ object FieldClassifier {
             "first", "last", "given", "family", "surname", "middle",
             "initial", "initials", "user", "company", "business",
             "organization", "org"
+        ),
+        FieldType.ADDR_LINE1 to setOf(
+            "line2", "addr2", "address2", "apartment", "apt", "suite", "unit", "floor", "box"
         )
     )
 
@@ -106,6 +109,7 @@ object FieldClassifier {
     )
 
     private val WORD_SPLIT = Regex("[^a-z0-9]+")
+    private val COMPOUND_COLLAPSE = Regex("""\b(line|addr|address)[\s_-]*([12])\b""")
 
     fun classify(signals: FieldSignals): FieldResult? {
         if (isExcluded(signals)) return null
@@ -209,6 +213,14 @@ object FieldClassifier {
         return tokens(blob).any { it in EXCLUDED_TOKENS }
     }
 
-    private fun tokens(text: String): Set<String> =
-        text.lowercase().split(WORD_SPLIT).filterTo(mutableSetOf()) { it.isNotEmpty() }
+    private fun tokens(text: String): Set<String> {
+        val lower = text.lowercase()
+        val collapsed = COMPOUND_COLLAPSE.replace(lower) { match ->
+            "${match.groupValues[1]}${match.groupValues[2]}"
+        }
+        val set = mutableSetOf<String>()
+        lower.split(WORD_SPLIT).filterTo(set) { it.isNotEmpty() }
+        collapsed.split(WORD_SPLIT).filterTo(set) { it.isNotEmpty() }
+        return set
+    }
 }

@@ -157,6 +157,38 @@ class FieldClassifierTest {
     }
 
     @Test
+    fun `label Address line 2 identifies ADDR_LINE2 not ADDR_LINE1`() {
+        assertEquals(
+            FieldType.ADDR_LINE2,
+            FieldClassifier.classify(FieldSignals(labelText = "Address line 2"))!!.type
+        )
+    }
+
+    @Test
+    fun `label Street address 2 identifies ADDR_LINE2`() {
+        assertEquals(
+            FieldType.ADDR_LINE2,
+            FieldClassifier.classify(FieldSignals(labelText = "Street address 2"))!!.type
+        )
+    }
+
+    @Test
+    fun `label Address line 1 identifies ADDR_LINE1`() {
+        assertEquals(
+            FieldType.ADDR_LINE1,
+            FieldClassifier.classify(FieldSignals(labelText = "Address line 1"))!!.type
+        )
+    }
+
+    @Test
+    fun `id entry address_2 identifies ADDR_LINE2`() {
+        assertEquals(
+            FieldType.ADDR_LINE2,
+            FieldClassifier.classify(FieldSignals(idEntry = "address_2"))!!.type
+        )
+    }
+
+    @Test
     fun `id entry zip_code identifies POSTAL_CODE`() {
         assertEquals(
             FieldType.POSTAL_CODE,
