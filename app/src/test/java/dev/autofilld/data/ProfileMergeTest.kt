@@ -87,4 +87,20 @@ class ProfileMergeTest {
             assertEquals("value-$type", updated.valueFor(type))
         }
     }
+
+    @Test
+    fun `merge into empty profile populates fields while preserving single row id`() {
+        val empty = Profile()
+        val merged = ProfileMerge.merge(
+            empty,
+            mapOf(
+                FieldType.FULL_NAME to "Alan Turing",
+                FieldType.EMAIL to "alan@turing.ac.uk"
+            )
+        )
+        assertEquals(Profile.SINGLE_ROW_ID, merged.id)
+        assertEquals("Alan Turing", merged.fullName)
+        assertEquals("alan@turing.ac.uk", merged.email)
+        assertEquals("", merged.phone)
+    }
 }

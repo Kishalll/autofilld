@@ -314,4 +314,177 @@ class FieldClassifierTest {
     fun `cvv token excluded`() {
         assertNull(FieldClassifier.classify(FieldSignals(labelText = "CVV")))
     }
+
+    // --- Additional HTML & Autocomplete Attributes ---
+
+    @Test
+    fun `html type tel attribute identifies PHONE`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("type" to "tel"))
+        )
+        assertEquals(FieldType.PHONE, result!!.type)
+    }
+
+    @Test
+    fun `html aria-label identifies EMAIL`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("aria-label" to "Your email address"))
+        )
+        assertEquals(FieldType.EMAIL, result!!.type)
+    }
+
+    @Test
+    fun `html name attribute identifies CITY`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("name" to "billing_city"))
+        )
+        assertEquals(FieldType.CITY, result!!.type)
+    }
+
+    @Test
+    fun `scoped autocomplete shipping street-address identifies ADDR_LINE1`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("autocomplete" to "shipping street-address"))
+        )
+        assertEquals(FieldType.ADDR_LINE1, result!!.type)
+    }
+
+    @Test
+    fun `scoped autocomplete section billing email identifies EMAIL`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("autocomplete" to "section-user billing email"))
+        )
+        assertEquals(FieldType.EMAIL, result!!.type)
+    }
+
+    @Test
+    fun `autocomplete address-level1 identifies STATE`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("autocomplete" to "address-level1"))
+        )
+        assertEquals(FieldType.STATE, result!!.type)
+    }
+
+    @Test
+    fun `autocomplete postal-code identifies POSTAL_CODE`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("autocomplete" to "postal-code"))
+        )
+        assertEquals(FieldType.POSTAL_CODE, result!!.type)
+    }
+
+    @Test
+    fun `autocomplete country identifies COUNTRY`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("autocomplete" to "country"))
+        )
+        assertEquals(FieldType.COUNTRY, result!!.type)
+    }
+
+    // --- Real-world Web Form & Framework Conventions ---
+
+    @Test
+    fun `bracketed framework name user_email identifies EMAIL`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(htmlAttrs = mapOf("name" to "user[email]"))
+        )
+        assertEquals(FieldType.EMAIL, result!!.type)
+    }
+
+    @Test
+    fun `bracketed framework name shipping_address_city identifies CITY with label`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(
+                labelText = "City",
+                htmlAttrs = mapOf("name" to "order[shipping_address][city]")
+            )
+        )
+        assertEquals(FieldType.CITY, result!!.type)
+    }
+
+    @Test
+    fun `punctuation and asterisk in label identifies EMAIL`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(labelText = "E-mail Address* (required):")
+        )
+        assertEquals(FieldType.EMAIL, result!!.type)
+    }
+
+    @Test
+    fun `punctuation in phone label identifies PHONE`() {
+        val result = FieldClassifier.classify(
+            FieldSignals(labelText = "Phone / Mobile (optional):")
+        )
+        assertEquals(FieldType.PHONE, result!!.type)
+    }
+
+    // --- InputType Variations ---
+
+    @Test
+    fun `postal address text variation corroborated clears threshold`() {
+        val inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS
+        val result = FieldClassifier.classify(
+            FieldSignals(idEntry = "postal", inputType = inputType)
+        )
+        assertEquals(FieldType.POSTAL_CODE, result!!.type)
+        assertTrue(result.score >= FieldClassifier.MIN_SCORE)
+    }
+
+    @Test
+    fun `visible password inputType excluded`() {
+        val inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        assertNull(FieldClassifier.classify(FieldSignals(labelText = "Password", inputType = inputType)))
+    }
+
+    @Test
+    fun `web password inputType excluded`() {
+        val inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
+        assertNull(FieldClassifier.classify(FieldSignals(labelText = "Password", inputType = inputType)))
+    }
+
+    @Test
+    fun `numeric pin password inputType excluded`() {
+        val inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
+        assertNull(FieldClassifier.classify(FieldSignals(labelText = "PIN", inputType = inputType)))
+    }
+
+    // --- Fast Hint Whitespace Tolerance ---
+
+    @Test
+    fun `autofill hint with whitespace and mixed case short-circuits`() {
+        val result = FieldClassifier.classify(FieldSignals(autofillHint = "  emailAddress  "))
+        assertEquals(FieldType.EMAIL, result!!.type)
+        assertEquals(1.0, result.score, 0.0)
+    }
+
+    // --- False-Positive Prevention on Generic Inputs ---
+
+    @Test
+    fun `search query input returns null`() {
+        assertNull(
+            FieldClassifier.classify(
+                FieldSignals(
+                    htmlAttrs = mapOf("type" to "search", "name" to "q", "placeholder" to "Search products...")
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `promo code coupon input returns null`() {
+        assertNull(
+            FieldClassifier.classify(
+                FieldSignals(idEntry = "coupon_code", hintText = "Promo or discount code")
+            )
+        )
+    }
+
+    @Test
+    fun `card number input returns null`() {
+        assertNull(
+            FieldClassifier.classify(
+                FieldSignals(labelText = "Card number", htmlAttrs = mapOf("name" to "card_number"))
+            )
+        )
+    }
 }
