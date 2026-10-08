@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_test_form_title">autofilld Debug Form</string>
+    <string name="section_native_form">1. Native Unhinted Form</string>
+    <string name="section_webview_form">2. WebView Form (Local Asset)</string>
+    <string name="btn_submit_native">Submit Native Form</string>
+</resources>

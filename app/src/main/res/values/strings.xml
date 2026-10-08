@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">autofilld</string>
-    <string name="status_placeholder">Settings UI arrives in a later phase.</string>
+    <string name="title_profile">Autofill Profile</string>
+    <string name="label_full_name">Full Name</string>
+    <string name="label_email">Email Address</string>
+    <string name="label_phone">Phone Number</string>
+    <string name="label_addr_line1">Address Line 1</string>
+    <string name="label_addr_line2">Address Line 2</string>
+    <string name="label_city">City</string>
+    <string name="label_state">State / Province</string>
+    <string name="label_postal_code">Postal Code</string>
+    <string name="label_country">Country</string>
+    <string name="btn_save_profile">Save Profile</string>
+    <string name="btn_open_settings">Open Autofill Settings</string>
+    <string name="status_enabled">Status: Enabled (dev.autofilld)</string>
+    <string name="status_disabled">Status: Not enabled (tap below to enable)</string>
+    <string name="msg_profile_saved">Profile saved successfully</string>
 </resources>
