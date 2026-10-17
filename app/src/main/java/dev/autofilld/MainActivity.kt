@@ -19,12 +19,39 @@ class MainActivity : Activity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.root.setOnApplyWindowInsetsListener { view, insets ->
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                val imeInsets = insets.getInsets(android.view.WindowInsets.Type.ime())
+                val systemInsets = insets.getInsets(android.view.WindowInsets.Type.systemBars())
+                val bottomPadding = maxOf(imeInsets.bottom, systemInsets.bottom)
+                view.setPadding(systemInsets.left, systemInsets.top, systemInsets.right, bottomPadding)
+            } else {
+                @Suppress("DEPRECATION")
+                view.setPadding(
+                    insets.systemWindowInsetLeft,
+                    insets.systemWindowInsetTop,
+                    insets.systemWindowInsetRight,
+                    insets.systemWindowInsetBottom
+                )
+            }
+            insets
+        }
+
         binding.btnOpenSettings.setOnClickListener {
             openAutofillSettings()
         }
 
         binding.btnSaveProfile.setOnClickListener {
             saveProfile()
+        }
+
+        binding.editCountry.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                saveProfile()
+                true
+            } else {
+                false
+            }
         }
     }
 
@@ -55,8 +82,12 @@ class MainActivity : Activity() {
 
         if (isEnabled) {
             binding.statusText.text = getString(R.string.status_enabled)
+            binding.statusText.setTextColor(0xFF16A34A.toInt())
+            binding.btnOpenSettings.visibility = android.view.View.GONE
         } else {
             binding.statusText.text = getString(R.string.status_disabled)
+            binding.statusText.setTextColor(0xFFDC2626.toInt())
+            binding.btnOpenSettings.visibility = android.view.View.VISIBLE
         }
     }
 
@@ -79,6 +110,9 @@ class MainActivity : Activity() {
     }
 
     private fun saveProfile() {
+        val imm = getSystemService(android.view.inputmethod.InputMethodManager::class.java)
+        currentFocus?.let { imm?.hideSoftInputFromWindow(it.windowToken, 0) }
+
         val app = application as? App ?: return
         val updated = Profile(
             fullName = binding.editFullName.text.toString().trim(),

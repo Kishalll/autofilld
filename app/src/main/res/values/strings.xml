@@ -16,4 +16,6 @@
     <string name="status_enabled">Status: Enabled (dev.autofilld)</string>
     <string name="status_disabled">Status: Not enabled (tap below to enable)</string>
     <string name="msg_profile_saved">Profile saved successfully</string>
+    <string name="section_personal">Personal Details</string>
+    <string name="section_address">Postal Address</string>
 </resources>
